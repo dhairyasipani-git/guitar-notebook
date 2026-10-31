@@ -1,4 +1,4 @@
-import { useEffect, useRef, type FocusEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, type FocusEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { updateClass, type ClassPatch } from '../db/classes'
 import type { GuitarClass } from '../db/types'
@@ -9,6 +9,17 @@ interface ClassHeaderProps {
   guitarClass: GuitarClass
 }
 
+/** Grows the title box to fit its text, so long titles wrap instead of being cut off. */
+function fitToText(box: HTMLTextAreaElement): void {
+  box.style.height = 'auto'
+  box.style.height = `${box.scrollHeight}px`
+}
+
+/** A title is one line of text; pasted line breaks become spaces. */
+function oneLine(text: string): string {
+  return text.replace(/\s*\n\s*/g, ' ').trim()
+}
+
 function isNewClassState(state: unknown): boolean {
   return typeof state === 'object' && state !== null && 'isNew' in state && state.isNew === true
 }
@@ -16,7 +27,7 @@ function isNewClassState(state: unknown): boolean {
 export function ClassHeader({ guitarClass }: ClassHeaderProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const titleRef = useRef<HTMLInputElement>(null)
+  const titleRef = useRef<HTMLTextAreaElement>(null)
   const { run, error } = useAsyncAction()
   const { id, number, date, title } = guitarClass
   const shouldFocusTitle = isNewClassState(location.state)
@@ -28,6 +39,10 @@ export function ClassHeader({ guitarClass }: ClassHeaderProps) {
     titleRef.current?.focus()
     navigate(location.pathname, { replace: true, state: null })
   }, [shouldFocusTitle, navigate, location.pathname])
+
+  useLayoutEffect(() => {
+    if (titleRef.current) fitToText(titleRef.current)
+  }, [title])
 
   const save = (patch: ClassPatch) => run(() => updateClass(id, patch))
 
@@ -43,47 +58,49 @@ export function ClassHeader({ guitarClass }: ClassHeaderProps) {
     <div className="stack">
       <div className="class-header">
         <Pick label={String(number)} size={54} />
-        <div className="grow">
-          <input
-            key={`title-${title}`}
-            ref={titleRef}
-            className="title-input"
-            aria-label="Class title"
-            placeholder="What was this class about?"
-            defaultValue={title}
-            onBlur={(event) => {
-              if (event.target.value.trim() !== title) void save({ title: event.target.value })
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') event.currentTarget.blur()
-            }}
-          />
-          <div className="class-meta">
-            <label className="row">
-              Class
-              <input
-                key={`number-${number}`}
-                className="meta-input meta-number"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                aria-label="Class number"
-                defaultValue={number}
-                onBlur={(event) => void saveOnBlur(event, String(number), (value) => ({ number: Number(value) }))}
-              />
-            </label>
-            <label className="row">
-              Date
-              <input
-                key={`date-${date}`}
-                className="meta-input"
-                type="date"
-                aria-label="Date"
-                defaultValue={date}
-                onBlur={(event) => void saveOnBlur(event, date, (value) => ({ date: value }))}
-              />
-            </label>
-          </div>
+        <textarea
+          key={`title-${title}`}
+          ref={titleRef}
+          className="title-input"
+          rows={1}
+          aria-label="Class title"
+          placeholder="What was this class about?"
+          defaultValue={title}
+          onInput={(event) => fitToText(event.currentTarget)}
+          onBlur={(event) => {
+            if (oneLine(event.target.value) !== title) void save({ title: oneLine(event.target.value) })
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter') return
+            event.preventDefault()
+            event.currentTarget.blur()
+          }}
+        />
+        <div className="class-meta">
+          <label className="row">
+            Class
+            <input
+              key={`number-${number}`}
+              className="meta-input meta-number"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              aria-label="Class number"
+              defaultValue={number}
+              onBlur={(event) => void saveOnBlur(event, String(number), (value) => ({ number: Number(value) }))}
+            />
+          </label>
+          <label className="row">
+            Date
+            <input
+              key={`date-${date}`}
+              className="meta-input"
+              type="date"
+              aria-label="Date"
+              defaultValue={date}
+              onBlur={(event) => void saveOnBlur(event, date, (value) => ({ date: value }))}
+            />
+          </label>
         </div>
       </div>
       {error && (
