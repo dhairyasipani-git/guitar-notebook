@@ -31,6 +31,7 @@
   --fret-nut: rgba(30, 64, 140, 0.28);
   --inlay: rgba(37, 99, 235, 0.3);
   --backdrop-opacity: 0.2;
+  --sheet: rgba(244, 248, 255, 0.74);
 }
 
 /* Dark theme: follows the device unless Light is picked, or forced with Dark. */
@@ -62,6 +63,7 @@
   --fret-nut: rgba(226, 232, 240, 0.4);
   --inlay: rgba(147, 197, 253, 0.45);
   --backdrop-opacity: 0.22;
+  --sheet: rgba(11, 18, 32, 0.72);
   }
 }
 
@@ -92,6 +94,7 @@
   --fret-nut: rgba(226, 232, 240, 0.4);
   --inlay: rgba(147, 197, 253, 0.45);
   --backdrop-opacity: 0.22;
+  --sheet: rgba(11, 18, 32, 0.72);
 }
 
 * {
@@ -526,6 +529,8 @@ textarea {
 .textarea {
   width: 100%;
   min-height: 44px;
+  /* Under 16px, iPhones zoom the page in when you tap a box and never zoom back out. */
+  font-size: 16px;
   padding: 10px 14px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
@@ -1246,7 +1251,7 @@ textarea {
   border: none;
   background: transparent;
   color: var(--text);
-  font-size: 15px;
+  font-size: 16px;
   outline: none;
 }
 
@@ -1534,6 +1539,13 @@ textarea {
   cursor: pointer;
 }
 
+/* On touch screens the time-signature picker needs 16px too, or tapping it zooms the page. */
+@media (pointer: coarse) {
+  .metronome-signature {
+    font-size: 16px;
+  }
+}
+
 .metronome-error {
   flex-basis: 100%;
   padding: 0 8px 4px;
@@ -1695,5 +1707,21 @@ kbd {
     gap: 4px;
     padding: 0 6px;
     font-size: 14px;
+  }
+}
+
+/* Phones: the notes sit on a frosted sheet so the guitars stay in the background. */
+@media (max-width: 640px) {
+  .app main {
+    margin: 0 -8px;
+    padding: 16px 12px 24px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background: var(--sheet);
+    box-shadow: var(--shadow);
+  }
+
+  .guitar-backdrop {
+    filter: blur(1.5px);
   }
 }

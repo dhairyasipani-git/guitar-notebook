@@ -72,14 +72,17 @@ export function ClassHeader({ guitarClass }: ClassHeaderProps) {
                 onBlur={(event) => void saveOnBlur(event, String(number), (value) => ({ number: Number(value) }))}
               />
             </label>
-            <input
-              key={`date-${date}`}
-              className="meta-input"
-              type="date"
-              aria-label="Date"
-              defaultValue={date}
-              onBlur={(event) => void saveOnBlur(event, date, (value) => ({ date: value }))}
-            />
+            <label className="row">
+              Date
+              <input
+                key={`date-${date}`}
+                className="meta-input"
+                type="date"
+                aria-label="Date"
+                defaultValue={date}
+                onBlur={(event) => void saveOnBlur(event, date, (value) => ({ date: value }))}
+              />
+            </label>
           </div>
         </div>
       </div>
