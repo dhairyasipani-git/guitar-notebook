@@ -371,7 +371,9 @@ describe('tab editor', () => {
     expect(screen.getByLabelText('Tab text')).toHaveValue('e|--0--|')
 
     await user.click(screen.getByRole('button', { name: /save tab/i }))
-    expect(await screen.findByText('e|--0--|')).toBeInTheDocument()
+    // Wait until we're back on the class page, so the text found is the saved tab, not the editor.
+    expect(await screen.findByRole('heading', { name: 'Untitled tab' })).toBeInTheDocument()
+    expect(screen.getByText('e|--0--|')).toBeInTheDocument()
   })
 
   it('ignores Ctrl and Cmd shortcuts in the grid', async () => {
